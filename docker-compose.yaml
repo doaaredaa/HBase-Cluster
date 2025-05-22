@@ -1,0 +1,111 @@
+# instead of Docker Run Container
+services:
+  master1:
+    build:
+      context: .
+    hostname: Master1
+    container_name: Master1
+    ports:
+      - "19988:9870"   # Namenode Web UI
+      - "19989:8088"  # ResourceManager Web UI
+    networks:
+      - hadoop-net   
+
+  master2:
+    build:
+      context: .
+    hostname: Master2
+    container_name: Master2
+    ports:
+      - "19990:9870"   # Namenode Web UI
+      - "19991:8088"  # ResourceManager Web UI
+    networks:
+      - hadoop-net 
+
+  master3:
+    build:
+      context: .
+    hostname: Master3
+    container_name: Master3
+    ports:
+      - "19992:9870"   # Namenode Web UI
+      - "19993:8088"  # ResourceManager Web UI
+    networks:
+      - hadoop-net 
+      
+  worker1:
+    build:
+      context: .
+    hostname: Worker1
+    container_name: Worker1
+    networks:
+      - hadoop-net   
+
+  # HBase Services
+  hbase-master1:
+    build:
+      context: .
+    hostname: HBaseMaster1
+    container_name: HBaseMaster1
+    ports:
+      - "16010:16010"  # HBase Master Web UI
+    environment:
+      - HBASE_ROLE=master
+      - HBASE_MASTER_NUM=1
+    depends_on:
+      - master1
+      - master2
+      - master3
+    networks:
+      - hadoop-net
+
+  hbase-master2:
+    build:
+      context: .
+    hostname: HBaseMaster2
+    container_name: HBaseMaster2
+    ports:
+      - "16011:16010"  # HBase Master Web UI
+    environment:
+      - HBASE_ROLE=master
+      - HBASE_MASTER_NUM=2
+    depends_on:
+      - master1
+      - master2
+      - master3
+    networks:
+      - hadoop-net
+
+  hbase-regionserver1:
+    build:
+      context: .
+    hostname: HBaseRegionServer1
+    container_name: HBaseRegionServer1
+    ports:
+      - "16030:16030"  # HBase RegionServer Web UI
+    environment:
+      - HBASE_ROLE=regionserver
+    depends_on:
+      - hbase-master1
+      - hbase-master2
+    networks:
+      - hadoop-net
+
+  hbase-regionserver2:
+    build:
+      context: .
+    hostname: HBaseRegionServer2
+    container_name: HBaseRegionServer2
+    ports:
+      - "16031:16030"  # HBase RegionServer Web UI
+    environment:
+      - HBASE_ROLE=regionserver
+    depends_on:
+      - hbase-master1
+      - hbase-master2
+    networks:
+      - hadoop-net
+      
+networks:
+  hadoop-net:
+    driver: bridge    
